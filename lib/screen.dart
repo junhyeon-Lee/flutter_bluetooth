@@ -1,5 +1,8 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth/controller.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:get/get.dart';
 
 class Screen extends StatelessWidget {
@@ -12,7 +15,7 @@ class Screen extends StatelessWidget {
         builder: (controller) {
           return Scaffold(
             body: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 const SizedBox(
                   height: 20,
@@ -31,15 +34,47 @@ class Screen extends StatelessWidget {
                         child: const Text('State')),
                   ],
                 ),
-                Container(
-                  color: Colors.greenAccent,
-                  width: Get.width,
-                  height: Get.height * 0.7,
-                  child: Obx(() => Text(controller.deviceNameList.value.toString())),
+
+                Obx(
+                  ()=> SizedBox(height: 600,
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                        itemCount: controller.deviceNameList.value.length,
+                        itemBuilder: (BuildContext context, int index){
+                      return  BlueButton(data: controller.deviceDataList.value[index],);
+                    }),
+                  ),
                 ),
+
+
+
               ],
             ),
           );
         });
   }
 }
+
+class BlueButton extends StatelessWidget {
+  const BlueButton({Key? key, required this.data}) : super(key: key);
+
+  final DiscoveredDevice data;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15,15,15,0),
+      child: Container(
+        width: double.infinity,
+        height: 70,
+        decoration: BoxDecoration(
+          color: Colors.blue.withOpacity(0.2),
+          borderRadius: const BorderRadius.all(Radius.circular(10))
+        ),
+        child: Center(child: Text(data.name)),
+      ),
+
+    );
+  }
+}
+

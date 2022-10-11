@@ -7,21 +7,40 @@ class Controller extends GetxController {
   final flutterReactiveBle = FlutterReactiveBle();
 
   var deviceName = ''.obs;
-  var deviceNameList = [].obs;
+  RxList deviceNameList = [].obs;
+  RxList deviceDataList = [].obs;
+  bool isOverLab = false;
+  late DiscoveredDevice data;
 
   Future<void> startScanning() async {
     //블루투스 권한을 먼저 받고 (비동기)
     await LocationPermissions().requestPermissions();
 
-    flutterReactiveBle.scanForDevices(withServices: []).listen((device) {
+    flutterReactiveBle.scanForDevices(withServices: []).where((event) => event.name.isNotEmpty).listen((device) {
+      data = device;
       debugPrint('scanning@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
       debugPrint(device.name);
-      debugPrint(device.id);
-      debugPrint(device.rssi.toString());
-      if (device.name.isNotEmpty) {
-        deviceNameList.add(device.name);
-        deviceName.value = device.name;
+
+      if(deviceNameList.value.isEmpty){
+        if(device.name.isNotEmpty){
+          deviceNameList.add(device.name);
+          deviceDataList.add(device);
+        }
+      }else{
+        for(int i =0;  i<deviceNameList.value.length;  i++){
+          if(device.name==deviceNameList.value[i]){
+           isOverLab = true;
+            break;
+          }
+        }
+
+        isOverLab?null:deviceNameList.add(device.name);
+        isOverLab?null:deviceDataList.add(device);
+        isOverLab = false;
       }
+
+
+
     }, onError: (e) {
       debugPrint('error@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
       debugPrint(e.toString());

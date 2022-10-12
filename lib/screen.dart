@@ -14,12 +14,15 @@ class Screen extends StatelessWidget {
         init: Controller(),
         builder: (controller) {
           return Scaffold(
+            appBar: AppBar(
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              title: const Text('Flutter Bluetooth _ tester', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: Colors.black,),),
+            ),
             body: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                const SizedBox(
-                  height: 20,
-                ),
+
                 Row(
                   children: [
                     TextButton(
@@ -27,6 +30,13 @@ class Screen extends StatelessWidget {
                           controller.startScanning();
                         },
                         child: const Text('Scan')),
+
+                    TextButton(
+                        onPressed: () {
+                          controller.stopScanning();
+                        },
+                        child: const Text('Stop')),
+
                     TextButton(
                         onPressed: () {
                           controller.printState();
@@ -34,19 +44,39 @@ class Screen extends StatelessWidget {
                         child: const Text('State')),
                   ],
                 ),
-
                 Obx(
-                  ()=> SizedBox(height: 600,
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                        itemCount: controller.deviceNameList.value.length,
-                        itemBuilder: (BuildContext context, int index){
-                      return  BlueButton(data: controller.deviceDataList.value[index],);
-                    }),
+                  () => Padding(
+                    padding: const EdgeInsets.fromLTRB(10,0,10,10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blueGrey),
+                        borderRadius: const BorderRadius.all(Radius.circular(10))
+                      ),
+                      height: 300,
+                      child: ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: controller.deviceNameList.value.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return BlueButton(
+                              data: controller.deviceDataList.value[index],
+                            );
+                          }),
+                    ),
                   ),
                 ),
 
-
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(controller.explainText),
+                      ],
+                    ),
+                  ),
+                ),
 
               ],
             ),
@@ -63,18 +93,27 @@ class BlueButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(15,15,15,0),
+      padding: const EdgeInsets.fromLTRB(15, 10, 15, 5),
       child: Container(
+        padding: const EdgeInsets.all(15),
         width: double.infinity,
-        height: 70,
+        height: 84,
         decoration: BoxDecoration(
-          color: Colors.blue.withOpacity(0.2),
-          borderRadius: const BorderRadius.all(Radius.circular(10))
+            color: Colors.blue.withOpacity(0.2),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+          border: Border.all(color: Colors.blueAccent)
         ),
-        child: Center(child: Text(data.name)),
+        child: Center(
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('DeviceName : ${data.name}'),
+            const SizedBox(height: 7),
+            Text('Uuid : ${data.serviceUuids.toString()}'),
+          ],
+        )),
       ),
-
     );
   }
 }
-

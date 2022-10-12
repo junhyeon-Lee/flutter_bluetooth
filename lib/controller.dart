@@ -5,6 +5,12 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:get/get.dart';
 import 'package:location_permissions/location_permissions.dart';
 
+
+Uuid _UART_UUID = Uuid.parse("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
+Uuid _UART_RX   = Uuid.parse("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
+Uuid _UART_TX   = Uuid.parse("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
+
+
 class Controller extends GetxController {
   final flutterReactiveBle = FlutterReactiveBle();
 
@@ -15,10 +21,19 @@ class Controller extends GetxController {
   late DiscoveredDevice data;
 
   StreamSubscription? subscription;
+  late Stream<ConnectionStateUpdate> currentConnectionStream;
+  late StreamSubscription<ConnectionStateUpdate> connection;
 
   Uuid xossId = Uuid.parse('00001816-0000-1000-8000-00805f9b34fb');
-  String explainText = '상태를 보고싶다면 상단의 state tap';
+  String explainText = '상태를 보고싶다면 tap';
+  bool connected = false;
+  var logTexts = "empty".obs;
 
+  int _numberOfMessagesReceived = 0;
+  late QualifiedCharacteristic _txCharacteristic;
+  late QualifiedCharacteristic _rxCharacteristic;
+  late Stream<List<int>> _receivedDataStream;
+  List<String> _receivedData = [];
 
   ///블루투스 장비들을 스캔
   Future<void> startScanning() async {
@@ -33,7 +48,7 @@ class Controller extends GetxController {
         .where((event) => event.name.isNotEmpty)
         .listen((device) {
           data = device;
-          debugPrint('scanning@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
+        //  debugPrint('scanning@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
 
           if (deviceNameList.value.isEmpty) {
             if (device.name.isNotEmpty) {
@@ -65,7 +80,60 @@ class Controller extends GetxController {
   }
 
   ///블루투스 장비와 연결
-  void connectDevice() {}
+  void onConnectDevice(index) {
+    currentConnectionStream = flutterReactiveBle.connectToAdvertisingDevice(
+      id:deviceDataList[index].id,
+      prescanDuration: const Duration(seconds: 1),
+      withServices: [_UART_UUID, _UART_RX, _UART_TX, xossId],
+    );
+    logTexts.value = "";
+    connection = currentConnectionStream.listen((event) {
+      var id = event.deviceId.toString();
+      switch(event.connectionState) {
+        case DeviceConnectionState.connecting:
+          {
+            logTexts.value= "${logTexts.value}Connecting to $id\n";
+            break;
+          }
+        case DeviceConnectionState.connected:
+          {
+            connected = true;
+            logTexts.value = "${logTexts.value}Connected to $id\n";
+            _numberOfMessagesReceived = 0;
+            _receivedData = [];
+            _txCharacteristic = QualifiedCharacteristic(serviceId: _UART_UUID, characteristicId: _UART_TX, deviceId: event.deviceId);
+            _receivedDataStream = flutterReactiveBle.subscribeToCharacteristic(_txCharacteristic);
+            _receivedDataStream.listen((data) {
+              onNewReceivedData(data);
+            }, onError: (dynamic error) {
+              logTexts.value = "${logTexts.value}Error:$error$id\n";
+            });
+            _rxCharacteristic = QualifiedCharacteristic(serviceId: _UART_UUID, characteristicId: _UART_RX, deviceId: event.deviceId);
+            break;
+          }
+        case DeviceConnectionState.disconnecting:
+          {
+            connected = false;
+            logTexts.value = "${logTexts.value}Disconnecting from $id\n";
+            break;
+          }
+        case DeviceConnectionState.disconnected:
+          {
+            logTexts.value = "${logTexts.value}Disconnected from $id\n";
+            break;
+          }
+      }
+    });
+  }
+  void onNewReceivedData(List<int> data) {
+    _numberOfMessagesReceived += 1;
+    _receivedData.add( "$_numberOfMessagesReceived: ${String.fromCharCodes(data)}");
+    if (_receivedData.length > 5) {
+      _receivedData.removeAt(0);
+    }
+    update();
+  }
+
 
   ///기기의 현재 블루투스 상태를 표시 연결이 가능한지
   void printState() {
@@ -88,4 +156,24 @@ class Controller extends GetxController {
       }
     });
   }
+
+
+
+
 }
+
+
+// void connectDevice(int index) {
+//   stopScanning();
+//
+//   connection=flutterReactiveBle.connectToDevice(
+//     id: deviceDataList.value[index].id,
+//     // servicesWithCharacteristicsToDiscover: {serviceId: [char1, char2]},
+//     connectionTimeout: const Duration(seconds: 2),
+//   ).listen((connectionState) {
+//     debugPrint("success");
+//   }, onError: (Object error) {
+//     debugPrint(error.toString());
+//   });
+//
+// }

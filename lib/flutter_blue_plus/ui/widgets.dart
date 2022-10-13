@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:get/get.dart';
 
 ////연결이 가능한 device
 class ScanResultTile extends StatelessWidget {
@@ -137,7 +138,8 @@ class ServiceTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Text('Service'),
+            '0x${service.uuid.toString().toUpperCase().substring(4, 8)}'=='0x180F'?const Text('Battery Data'):const Text('Cycling Speed and Cadence'),
+
             Text('0x${service.uuid.toString().toUpperCase().substring(4, 8)}',
                 style: Theme.of(context).textTheme.bodyText1?.copyWith(
                     color: Theme.of(context).textTheme.caption?.color))

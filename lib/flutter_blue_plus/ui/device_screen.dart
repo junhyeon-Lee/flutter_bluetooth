@@ -19,14 +19,59 @@ class DeviceScreen extends StatelessWidget {
     ];
   }
 
+
+
   List<Widget> _buildServiceTiles(List<BluetoothService> services) {
+     debugPrint('@@@@AAAA@@@@AAAA@@@@');
+     debugPrint('@@@@AAAA@@@@AAAA@@@@');
+     if(services.isNotEmpty){
+       debugPrint(services[0].uuid.toString());
+       debugPrint('@@@@AAAA@@@@AAAA@@@@');
+       debugPrint('0x${services[0].uuid.toString().toUpperCase().substring(4, 8)}'.toString());
+
+     }
+
+
+     debugPrint('@@@@AAAA@@@@AAAA@@@@');
+     ////'0x${s.uuid.toString().toUpperCase().substring(4, 8)}'=='0X180F'?
     return services
         .map(
-          (s) => ServiceTile(
+          (s) =>
+          '0x${s.uuid.toString().toUpperCase().substring(4, 8)}'=='0x180F'?
+          ServiceTile(
+            service: s,
+            characteristicTiles: s.characteristics
+                .map(
+                  (c) =>  CharacteristicTile(
+                characteristic: c,
+                onReadPressed: () => c.read(),
+                onWritePressed: () async {
+                  await c.write(_getRandomBytes(), withoutResponse: true);
+                  await c.read();
+                },
+                onNotificationPressed: () async {
+                  await c.setNotifyValue(!c.isNotifying);
+                  await c.read();
+                },
+                descriptorTiles: c.descriptors
+                    .map(
+                      (d) => DescriptorTile(
+                    descriptor: d,
+                    onReadPressed: () => d.read(),
+                    onWritePressed: () => d.write(_getRandomBytes()),
+                  ),
+                )
+                    .toList(),
+              ),
+            )
+                .toList(),
+          ):
+          '0x${s.uuid.toString().toUpperCase().substring(4, 8)}'=='0x1816'?
+          ServiceTile(
         service: s,
         characteristicTiles: s.characteristics
             .map(
-              (c) => CharacteristicTile(
+              (c) =>  CharacteristicTile(
             characteristic: c,
             onReadPressed: () => c.read(),
             onWritePressed: () async {
@@ -49,7 +94,7 @@ class DeviceScreen extends StatelessWidget {
           ),
         )
             .toList(),
-      ),
+      ):Container(),
     )
         .toList();
   }

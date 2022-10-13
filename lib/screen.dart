@@ -30,13 +30,11 @@ class Screen extends StatelessWidget {
                           controller.startScanning();
                         },
                         child: const Text('Scan')),
-
                     TextButton(
                         onPressed: () {
                           controller.stopScanning();
                         },
                         child: const Text('Stop')),
-
                     TextButton(
                         onPressed: () {
                           controller.printState();
@@ -58,13 +56,20 @@ class Screen extends StatelessWidget {
                           shrinkWrap: true,
                           itemCount: controller.deviceNameList.value.length,
                           itemBuilder: (BuildContext context, int index) {
-                            return BlueButton(
-                              data: controller.deviceDataList.value[index],
+                            return InkWell(
+                              onTap: (){
+                                controller.connectDevice(index);
+                              },
+                              child: BlueButton(
+                                data: controller.deviceDataList.value[index],
+                              ),
                             );
                           }),
                     ),
                   ),
                 ),
+
+                Obx(() => Text(controller.logTexts.value)),
 
                 Expanded(
                   child: Padding(
@@ -72,12 +77,13 @@ class Screen extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(controller.explainText),
+                        TextButton(
+                            onPressed: () {controller.printState();},
+                            child: Text(controller.explainText)),
                       ],
                     ),
                   ),
                 ),
-
               ],
             ),
           );

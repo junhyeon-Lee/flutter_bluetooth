@@ -30,16 +30,20 @@ class Screen extends StatelessWidget {
                           controller.startScanning();
                         },
                         child: const Text('Scan')),
+
                     TextButton(
                         onPressed: () {
                           controller.stopScanning();
                         },
                         child: const Text('Stop')),
+
+                    TextButton(
+                        onPressed: () {
+                          controller.printState();
+                        },
+                        child: const Text('State')),
                   ],
                 ),
-
-
-                ///스캔한 데이터 목록 todo: 실시간 업데이트
                 Obx(
                   () => Padding(
                     padding: const EdgeInsets.fromLTRB(10,0,10,10),
@@ -48,47 +52,32 @@ class Screen extends StatelessWidget {
                         border: Border.all(color: Colors.blueGrey),
                         borderRadius: const BorderRadius.all(Radius.circular(10))
                       ),
-                      height: 200,
+                      height: 300,
                       child: ListView.builder(
-                        reverse: true,
                           physics: const BouncingScrollPhysics(),
                           shrinkWrap: true,
                           itemCount: controller.deviceNameList.value.length,
                           itemBuilder: (BuildContext context, int index) {
-                            return InkWell(
-                              onTap: (){
-                                debugPrint("connecting device");
-                                controller.onConnectDevice(index);
-                              },
-                              child: BlueButton(
-                                data: controller.deviceDataList.value[index],
-                              ),
+                            return BlueButton(
+                              data: controller.deviceDataList.value[index],
                             );
                           }),
                     ),
                   ),
                 ),
 
-                Obx(()=>Text(controller.logTexts.value)),
-                ///하단부 state button
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(15.0),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-
-                        TextButton(
-                            onPressed: () {
-                              controller.printState();
-                            },
-                            child:  Text(controller.explainText)),
+                        Text(controller.explainText),
                       ],
                     ),
                   ),
                 ),
+
               ],
             ),
           );
@@ -106,7 +95,7 @@ class BlueButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(15, 10, 15, 5),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(15,15,0,15),
+        padding: const EdgeInsets.all(15),
         width: double.infinity,
         height: 84,
         decoration: BoxDecoration(

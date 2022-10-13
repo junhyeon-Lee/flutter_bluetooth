@@ -1,34 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
+////연결이 가능한 device
 class ScanResultTile extends StatelessWidget {
+  ////연결이 가능한 device
   const ScanResultTile({Key? key, required this.result, this.onTap})
       : super(key: key);
 
   final ScanResult result;
   final VoidCallback? onTap;
 
+  ///name
   Widget _buildTitle(BuildContext context) {
     if (result.device.name.isNotEmpty) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          ///device name
           Text(
             result.device.name,
-            overflow: TextOverflow.ellipsis,
+            overflow: TextOverflow.ellipsis
           ),
           Text(
             result.device.id.toString(),
-            style: Theme.of(context).textTheme.caption,
+            style: Theme.of(context).textTheme.caption
           )
         ],
       );
     } else {
+      ///이름이 없으면 아이디
       return Text(result.device.id.toString());
     }
   }
 
+  ///연결가능 아이템 설명
   Widget _buildAdvRow(BuildContext context, String title, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
@@ -84,16 +90,13 @@ class ScanResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ///scanned data
     return ExpansionTile(
       title: _buildTitle(context),
       leading: Text(result.rssi.toString()),
-      trailing: ElevatedButton(
-        child: const Text('CONNECT'),
-        style: ElevatedButton.styleFrom(
-          primary: Colors.black,
-          onPrimary: Colors.white,
-        ),
+      trailing: OutlinedButton(
         onPressed: (result.advertisementData.connectable) ? onTap : null,
+        child: const Text('CONNECT'),
       ),
       children: <Widget>[
         _buildAdvRow(
@@ -114,6 +117,9 @@ class ScanResultTile extends StatelessWidget {
     );
   }
 }
+
+
+
 
 class ServiceTile extends StatelessWidget {
   final BluetoothService service;
@@ -252,6 +258,7 @@ class DescriptorTile extends StatelessWidget {
         initialData: descriptor.lastValue,
         builder: (c, snapshot) => Text(snapshot.data.toString()),
       ),
+      //데이터 상호 교환 버튼
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[

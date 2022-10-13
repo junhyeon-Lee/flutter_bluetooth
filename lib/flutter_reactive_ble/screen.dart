@@ -1,7 +1,7 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth/controller.dart';
+import 'package:flutter_bluetooth/flutter_reactive_ble/controller.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:get/get.dart';
 
@@ -30,13 +30,11 @@ class Screen extends StatelessWidget {
                           controller.startScanning();
                         },
                         child: const Text('Scan')),
-
                     TextButton(
                         onPressed: () {
                           controller.stopScanning();
                         },
                         child: const Text('Stop')),
-
                     TextButton(
                         onPressed: () {
                           controller.printState();
@@ -58,13 +56,20 @@ class Screen extends StatelessWidget {
                           shrinkWrap: true,
                           itemCount: controller.deviceNameList.value.length,
                           itemBuilder: (BuildContext context, int index) {
-                            return BlueButton(
-                              data: controller.deviceDataList.value[index],
+                            return InkWell(
+                              onTap: (){
+                                controller.connectDevice(index);
+                              },
+                              child: BlueButton(
+                                data: controller.deviceDataList.value[index],
+                              ),
                             );
                           }),
                     ),
                   ),
                 ),
+
+                Obx(() => Text(controller.logTexts.value)),
 
                 Expanded(
                   child: Padding(
@@ -72,12 +77,13 @@ class Screen extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(controller.explainText),
+                        TextButton(
+                            onPressed: () {controller.printState();},
+                            child: Text(controller.explainText)),
                       ],
                     ),
                   ),
                 ),
-
               ],
             ),
           );

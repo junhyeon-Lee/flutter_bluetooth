@@ -19,14 +19,9 @@ class ScanResultTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           ///device name
-          Text(
-            result.device.name,
-            overflow: TextOverflow.ellipsis
-          ),
-          Text(
-            result.device.id.toString(),
-            style: Theme.of(context).textTheme.caption
-          )
+          Text(result.device.name, overflow: TextOverflow.ellipsis),
+          Text(result.device.id.toString(),
+              style: Theme.of(context).textTheme.caption)
         ],
       );
     } else {
@@ -119,9 +114,6 @@ class ScanResultTile extends StatelessWidget {
   }
 }
 
-
-
-
 class ServiceTile extends StatelessWidget {
   final BluetoothService service;
   final List<CharacteristicTile> characteristicTiles;
@@ -138,8 +130,14 @@ class ServiceTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            '0x${service.uuid.toString().toUpperCase().substring(4, 8)}'=='0x180F'?const Text('Battery Data'):const Text('Cycling Speed and Cadence'),
-
+            '0x${service.uuid.toString().toUpperCase().substring(4, 8)}' ==
+                    '0x180F'
+                ? const Text('Battery Data')
+                : '0x${service.uuid.toString().toUpperCase().substring(4, 8)}' ==
+                        '0x180A'
+                    ? const Text('Device Information')
+                    : const Text(
+                        'Pressure Measurement Service Characteristics'),
             Text('0x${service.uuid.toString().toUpperCase().substring(4, 8)}',
                 style: Theme.of(context).textTheme.bodyText1?.copyWith(
                     color: Theme.of(context).textTheme.caption?.color))
@@ -151,7 +149,7 @@ class ServiceTile extends StatelessWidget {
       return ListTile(
         title: const Text('Service'),
         subtitle:
-        Text('0x${service.uuid.toString().toUpperCase().substring(4, 8)}'),
+            Text('0x${service.uuid.toString().toUpperCase().substring(4, 8)}'),
       );
     }
   }
@@ -159,18 +157,16 @@ class ServiceTile extends StatelessWidget {
 
 class CharacteristicTile extends StatelessWidget {
   final BluetoothCharacteristic characteristic;
-  final List<DescriptorTile> descriptorTiles;
   final VoidCallback? onReadPressed;
   final VoidCallback? onWritePressed;
   final VoidCallback? onNotificationPressed;
 
   const CharacteristicTile(
       {Key? key,
-        required this.characteristic,
-        required this.descriptorTiles,
-        this.onReadPressed,
-        this.onWritePressed,
-        this.onNotificationPressed})
+      required this.characteristic,
+      this.onReadPressed,
+      this.onWritePressed,
+      this.onNotificationPressed})
       : super(key: key);
 
   @override
@@ -180,7 +176,7 @@ class CharacteristicTile extends StatelessWidget {
       initialData: characteristic.lastValue,
       builder: (c, snapshot) {
         final value = snapshot.data;
-        return ExpansionTile(
+        return ListTile(
           title: ListTile(
             title: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -201,85 +197,15 @@ class CharacteristicTile extends StatelessWidget {
             children: <Widget>[
               IconButton(
                 icon: Icon(
-                  Icons.file_download,
+                  Icons.contactless,
                   color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
                 ),
                 onPressed: onReadPressed,
               ),
-              IconButton(
-                icon: Icon(Icons.file_upload,
-                    color: Theme.of(context).iconTheme.color?.withOpacity(0.5)),
-                onPressed: onWritePressed,
-              ),
-              IconButton(
-                icon: Icon(
-                    characteristic.isNotifying
-                        ? Icons.sync_disabled
-                        : Icons.sync,
-                    color: Theme.of(context).iconTheme.color?.withOpacity(0.5)),
-                onPressed: onNotificationPressed,
-              )
             ],
           ),
-          children: descriptorTiles,
         );
       },
-    );
-  }
-}
-
-class DescriptorTile extends StatelessWidget {
-  final BluetoothDescriptor descriptor;
-  final VoidCallback? onReadPressed;
-  final VoidCallback? onWritePressed;
-
-  const DescriptorTile(
-      {Key? key,
-        required this.descriptor,
-        this.onReadPressed,
-        this.onWritePressed})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          const Text('Descriptor'),
-          Text('0x${descriptor.uuid.toString().toUpperCase().substring(4, 8)}',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyText1
-                  ?.copyWith(color: Theme.of(context).textTheme.caption?.color))
-        ],
-      ),
-      subtitle: StreamBuilder<List<int>>(
-        stream: descriptor.value,
-        initialData: descriptor.lastValue,
-        builder: (c, snapshot) => Text(snapshot.data.toString()),
-      ),
-      //데이터 상호 교환 버튼
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.file_download,
-              color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
-            ),
-            onPressed: onReadPressed,
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.file_upload,
-              color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
-            ),
-            onPressed: onWritePressed,
-          )
-        ],
-      ),
     );
   }
 }

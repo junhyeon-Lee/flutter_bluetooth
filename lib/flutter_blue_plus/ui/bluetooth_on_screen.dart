@@ -16,7 +16,7 @@ class FindDevicesScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.transparent,
         title: const Text(
-          'Flutter Bluetooth _ tester',
+          'Flutter Bluetooth tester',
           style: TextStyle(
             fontWeight: FontWeight.w900,
             fontSize: 20,
@@ -30,35 +30,53 @@ class FindDevicesScreen extends StatelessWidget {
         child: Column(
           children: <Widget>[
             ///connected device list
-            StreamBuilder<List<BluetoothDevice>>(
-              stream: Stream.periodic(const Duration(seconds: 2))
-                  .asyncMap((_) => FlutterBluePlus.instance.connectedDevices),
-              initialData: const [],
-              builder: (c, snapshot) => Column(
-                children: snapshot.data!
-                    .map((d) => ListTile(
-                          title: Text(d.name),
-                          subtitle: Text(d.id.toString()),
-                          trailing: StreamBuilder<BluetoothDeviceState>(
-                            stream: d.state,
-                            initialData: BluetoothDeviceState.disconnected,
-                            builder: (c, snapshot) {
-                              if (snapshot.data ==
-                                  BluetoothDeviceState.connected) {
-                                return ElevatedButton(
-                                  child: const Text('OPEN'),
-                                  onPressed: () => Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              DeviceScreen(device: d))),
-                                );
-                              }
-                              return Text(snapshot.data.toString());
-                            },
-                          ),
-                        ))
-                    .toList(),
-              ),
+            Column(crossAxisAlignment:CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: 20),
+                  child: Text('connected devices'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  child: Container(
+                    width: MediaQuery.of(context).size.width-20,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    ),
+                    child: StreamBuilder<List<BluetoothDevice>>(
+                      stream: Stream.periodic(const Duration(seconds: 2))
+                          .asyncMap((_) => FlutterBluePlus.instance.connectedDevices),
+                      initialData: const [],
+                      builder: (c, snapshot) => Column(
+                        children: snapshot.data!
+                            .map((d) => ListTile(
+                                  title: Text(d.name),
+                                  subtitle: Text(d.id.toString()),
+                                  trailing: StreamBuilder<BluetoothDeviceState>(
+                                    stream: d.state,
+                                    initialData: BluetoothDeviceState.disconnected,
+                                    builder: (c, snapshot) {
+                                      if (snapshot.data ==
+                                          BluetoothDeviceState.connected) {
+                                        return ElevatedButton(
+                                          child: const Text('OPEN'),
+                                          onPressed: () => Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      DeviceScreen(device: d))),
+                                        );
+                                      }
+                                      return Text(snapshot.data.toString());
+                                    },
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
             ///scanned device list
@@ -70,8 +88,7 @@ class FindDevicesScreen extends StatelessWidget {
                     .map(
                       (r) => ScanResultTile(
                         result: r,
-                        onTap: () => Navigator.of(context)
-                            .push(MaterialPageRoute(builder: (context) {
+                        onTap: ()=>Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                           r.device.connect();
                           return DeviceScreen(device: r.device);
                         })),
@@ -93,8 +110,11 @@ class FindDevicesScreen extends StatelessWidget {
           if (snapshot.data!) {
             return FloatingActionButton(
               onPressed: () => FlutterBluePlus.instance.stopScan(),
-              backgroundColor: Colors.red,
-              child: const Icon(Icons.stop),
+              child:
+              const CircularProgressIndicator(
+                valueColor:AlwaysStoppedAnimation<Color>(Colors.grey),
+              ),
+
             );
           } else {
             return FloatingActionButton(

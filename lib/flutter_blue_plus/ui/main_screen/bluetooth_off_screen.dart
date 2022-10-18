@@ -10,7 +10,7 @@ class BluetoothOffScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('블루투스 켜주세요'),
+        child: Text('블루투스가 꺼져있습니다.\n\n 블루투스를 켜주세요.'),
       ),
     );
   }

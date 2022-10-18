@@ -2,7 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:flutter_bluetooth/flutter_blue_plus/ui/widgets.dart';
+import 'package:flutter_bluetooth/flutter_blue_plus/ui/device_screen/device_screen_widget/connect_result.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DeviceScreen extends StatefulWidget {
   const DeviceScreen({Key? key, required this.device}) : super(key: key);
@@ -28,6 +29,13 @@ class _DeviceScreenState extends State<DeviceScreen> {
       math.nextInt(255),
       math.nextInt(255)
     ];
+  }
+
+  Future<void> tabDisconnect(BluetoothDevice device) async {
+    device.disconnect();
+    final local = await SharedPreferences.getInstance();
+    local.remove('id');
+    debugPrint('로컬 id 삭제 완료');
   }
 
   List<Widget> _buildServiceTiles(List<BluetoothService> services) {
@@ -141,7 +149,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
               String text;
               switch (snapshot.data) {
                 case BluetoothDeviceState.connected:
-                  onPressed = () => widget.device.disconnect();
+                  onPressed = () => tabDisconnect(widget.device);
                   text = 'DISCONNECT';
                   break;
                 case BluetoothDeviceState.disconnected:

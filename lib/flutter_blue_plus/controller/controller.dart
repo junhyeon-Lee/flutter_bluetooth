@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_bluetooth/flutter_blue_plus/ui/device_screen/device_screen.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,9 +22,7 @@ class MainScreenController extends GetxController {
         if (id != null) {
           if (id == r.device.id.toString()) {
             r.device.connect();
-            debugPrint('@@@@@@@@@@@@');
-            debugPrint('connect Complete');
-            debugPrint('@@@@@@@@@@@@');
+            Get.to(() => DeviceScreen(device: r.device));
           }
         }
       }

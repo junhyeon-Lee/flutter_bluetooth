@@ -2,10 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_bluetooth/flutter_blue_plus/controller/controller.dart';
+import 'package:flutter_bluetooth/flutter_blue_plus/ui/main_screen/main_screen_widget/main_appbar.dart';
 import 'package:get/get.dart';
-
-import 'device_screen.dart';
-import 'widgets.dart';
+import '../device_screen/device_screen.dart';
+import 'main_screen_widget/scan_result.dart';
 
 class FindDevicesScreen extends StatelessWidget {
   const FindDevicesScreen({Key? key}) : super(key: key);
@@ -17,18 +17,7 @@ class FindDevicesScreen extends StatelessWidget {
         builder: (controller) {
           return Scaffold(
             backgroundColor: const Color(0xffe3e3e3),
-            appBar: AppBar(
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              title: const Text(
-                'Flutter Bluetooth tester',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 20,
-                  color: Colors.black,
-                ),
-              ),
-            ),
+            appBar: const MainAppbar(),
 
             ///main list view
             body: SingleChildScrollView(
@@ -38,10 +27,6 @@ class FindDevicesScreen extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.only(left: 20),
-                        child: Text('connected devices'),
-                      ),
                       Padding(
                         padding: const EdgeInsets.only(left: 10, right: 10),
                         child: Container(
@@ -95,6 +80,7 @@ class FindDevicesScreen extends StatelessWidget {
 
                   ///scanned device list
                   StreamBuilder<List<ScanResult>>(
+                    //스캔한 장비들이 나타난다.
                     stream: FlutterBluePlus.instance.scanResults,
                     initialData: const [],
                     builder: (c, snapshot) => Column(
@@ -105,8 +91,11 @@ class FindDevicesScreen extends StatelessWidget {
                                 onTap: () {
                                   Navigator.of(context).push(
                                       MaterialPageRoute(builder: (context) {
+                                    //connect 버튼을 누르면 id를 로컬에 저장한다.
                                     controller.setID(r.device.id.toString());
+                                    //디바이스를 연결하고
                                     r.device.connect();
+                                    //연결된 디바이스의 상세 페이지로 이동한다.
                                     return DeviceScreen(device: r.device);
                                   }));
                                 }),
@@ -116,30 +105,6 @@ class FindDevicesScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-
-            ///하단부 scan floating button
-            floatingActionButton: StreamBuilder<bool>(
-              stream: FlutterBluePlus.instance.isScanning,
-              initialData: false,
-              builder: (c, snapshot) {
-                if (snapshot.data!) {
-                  return FloatingActionButton(
-                    onPressed: () => FlutterBluePlus.instance.stopScan(),
-                    child: const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
-                    ),
-                  );
-                } else {
-                  return FloatingActionButton(
-                      child: const Icon(Icons.search),
-                      onPressed: () => FlutterBluePlus.instance.startScan(
-                              timeout: const Duration(seconds: 4),
-                              withServices: [
-                                Guid("00001816-0000-1000-8000-00805f9b34fb")
-                              ]));
-                }
-              },
             ),
           );
         });
